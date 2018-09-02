@@ -1,0 +1,17 @@
+def version = new groovy.json.JsonSlurper().parseText(new File("$rootDir/../package.json").text).version
+def matcher = version =~ /^(\d+)\.(\d+)\.(\d+)(?:-([\w-])+(?:\.([\w-]+))*)?/ // 1.0.0-alpha.1
+def major = matcher[0][1] as int
+def minor = matcher[0][2] as int
+def patch = matcher[0][3] as int
+def preIdentifier = matcher[0][4]
+def preVersion = (matcher[0][5] ?: '0') as int
+def preIdentifiers = ['alpha': 0, 'beta': 3, 'rc': 6]
+
+if (major > 99 || minor > 99 || patch > 99 || preVersion > 29) {
+    throw new IllegalArgumentException('Version number is too big')
+}
+
+ext {
+    appVersionCode = major * 1000000 + minor * 10000 + patch * 100 + (preIdentifiers.containsKey(preIdentifier) ? preIdentifiers.get(preIdentifier) * 10 + preVersion : 90)
+    appVersionName = version
+}
